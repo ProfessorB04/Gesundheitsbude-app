@@ -58,8 +58,9 @@ const ROLE_LABELS = { admin: 'Admin', team: 'Team', client: 'Klient:in' };
 const isAdmin = (profile) => profile.role === 'admin';
 const isStaff = (profile) => profile.role === 'admin' || profile.role === 'team';
 
-// Bereichs-Rechte je Klient:in (profiles.permissions) – für spätere Bereiche vorbereitet
-const perm = (profile, area) => isStaff(profile) ? 'edit' : ((profile.permissions || {})[area] || 'none');
+// Bereichs-Rechte je Klient:in (profiles.permissions, Auswahl in rechte.js); Standard für neue Zugänge:
+const PERM_DEFAULT = { therapieplan: 'view', labor: 'none', tagebuch: 'none', videos: 'none' };
+const perm = (profile, area) => isStaff(profile) ? 'edit' : ((Object.assign({}, PERM_DEFAULT, profile.permissions || {}))[area] || 'none');
 const can = (profile, area) => perm(profile, area) !== 'none';
 
 // ---------------- Navigation ----------------
@@ -405,7 +406,7 @@ async function renderTeamPage(profile) {
     return `<span class="status-pill ok">Aktiv</span> <span class="status-when">zuletzt ${fmtDT(st.last_sign_in_at)}</span>${mail}`;
   };
 
-  const { data: users } = await sb.from('profiles').select('id, name, role, created_at, username');
+  const { data: users } = await sb.from('profiles').select('id, name, role, created_at, username, permissions');
   const roleOrder = { admin: 0, team: 1, client: 2 };
   const sorted = (users || []).slice().sort((a, b) =>
     (roleOrder[a.role] - roleOrder[b.role]) || a.name.localeCompare(b.name, 'de'));
@@ -423,9 +424,11 @@ async function renderTeamPage(profile) {
              <button type="button" class="danger small-btn" data-delete="${u.id}">L&ouml;schen</button>`;
         const unameCell = `<div class="uname">${u.username ? '&#128100; ' + esc(u.username) : '<span class="muted">kein Benutzername</span>'}
             <button type="button" class="link-btn" data-uname="${u.id}" title="Benutzername f&uuml;r die Anmeldung festlegen">${u.username ? '&auml;ndern' : 'festlegen'}</button></div>`;
-        return `<tr><td><span class="uname-name">${esc(u.name)}</span>${unameCell}</td><td>${statusCell(u)}</td><td>${roleCell}</td><td>${actionCell}</td></tr>`;
+        const permCell = u.role !== 'client' ? '<span class="muted">alles</span>' :
+          `<div class="chips">${permSummary(u.permissions)}</div><button type="button" class="secondary small-btn" data-perm="${u.id}" style="margin-top:6px;">Rechte</button>`;
+        return `<tr><td><span class="uname-name">${esc(u.name)}</span>${unameCell}</td><td>${statusCell(u)}</td><td>${roleCell}</td><td>${permCell}</td><td>${actionCell}</td></tr>`;
       }).join('')
-    : `<tr><td colspan="4" class="muted">Noch keine Nutzer:innen.</td></tr>`;
+    : `<tr><td colspan="5" class="muted">Noch keine Nutzer:innen.</td></tr>`;
 
   const content = `
     <div class="card">
@@ -442,9 +445,13 @@ async function renderTeamPage(profile) {
             <option value="team">Team</option>
           </select>
         </label>
+        <div class="invite-perms" id="invitePerms">
+          <div class="invite-perms-h">Was darf diese Person sehen?</div>
+          ${permTableHtml('inv', PERM_DEFAULT)}
+        </div>
         <button type="submit">Zugang anlegen</button>
       </form>
-      <p class="role-hint">Team-Mitglieder k&ouml;nnen alle Inhalte nutzen, aber keine Zug&auml;nge anlegen oder Rollen &auml;ndern.</p>
+      <p class="role-hint" id="inviteRoleHint">Team-Mitglieder k&ouml;nnen alle Inhalte nutzen, aber keine Zug&auml;nge anlegen oder Rollen &auml;ndern.</p>
       <p class="notice" id="inviteMsg" hidden></p>
     </div>
 
@@ -454,11 +461,11 @@ async function renderTeamPage(profile) {
       <h2>Alle Nutzer:innen</h2>
       <div class="tablewrap">
         <table class="user-table">
-          <thead><tr><th>Name</th><th>Anmeldestatus</th><th>Rolle</th><th>Zugang</th></tr></thead>
+          <thead><tr><th>Name</th><th>Anmeldestatus</th><th>Rolle</th><th>Rechte</th><th>Zugang</th></tr></thead>
           <tbody>${userRows}</tbody>
         </table>
       </div>
-      <p class="hint">Rolle &auml;ndern: im Auswahlfeld umstellen, wird sofort gespeichert. &bdquo;Einmalpasswort&ldquo; erzeugt neue Zugangsdaten &mdash; das alte Passwort gilt dann nicht mehr. &bdquo;L&ouml;schen&ldquo; entfernt den Zugang dauerhaft. Die Admin-Rolle kann nur direkt in Supabase vergeben werden.</p>
+      <p class="hint">Rolle &auml;ndern: im Auswahlfeld umstellen, wird sofort gespeichert. &bdquo;Einmalpasswort&ldquo; erzeugt neue Zugangsdaten &mdash; das alte Passwort gilt dann nicht mehr. &bdquo;L&ouml;schen&ldquo; entfernt den Zugang dauerhaft. &bdquo;Rechte&ldquo; legt fest, welche Bereiche Klient:innen sehen (Admin + Team sehen immer alles). Die Admin-Rolle kann nur direkt in Supabase vergeben werden.</p>
     </div>
   `;
 
@@ -470,6 +477,14 @@ async function renderTeamPage(profile) {
       if (error) { toast('Fehler: ' + error.message); renderTeamPage(profile); }
       else toast('Rolle gespeichert.');
     };
+  });
+
+  // Rechte-Auswahl nur bei Klient:innen
+  const invRole = document.getElementById('inviteRole');
+  const syncPerms = () => { document.getElementById('invitePerms').hidden = invRole.value !== 'client'; };
+  invRole.onchange = syncPerms; syncPerms();
+  appEl.querySelectorAll('[data-perm]').forEach(btn => {
+    btn.onclick = () => openPermissionsDialog(sorted.find(u => u.id === btn.dataset.perm), () => renderTeamPage(profile));
   });
 
   // Benutzername aus dem Namen vorschlagen, solange nicht selbst geändert
@@ -526,7 +541,8 @@ async function renderTeamPage(profile) {
     msgEl.hidden = false;
     if (!email && !username) { msgEl.textContent = 'Bitte Benutzername und/oder E-Mail angeben.'; return; }
     msgEl.textContent = 'Lege Zugang an…';
-    const { data, error } = await sb.functions.invoke('invite-user', { body: { name, email, username, role } });
+    const permissions = role === 'client' ? readPerms(document.getElementById('invitePerms'), 'inv') : undefined;
+    const { data, error } = await sb.functions.invoke('invite-user', { body: { name, email, username, role, permissions } });
     if (error || (data && data.error)) { msgEl.textContent = 'Fehler: ' + (data && data.error ? data.error : error.message); return; }
     toast('Zugang für ' + name + ' (' + ROLE_LABELS[role] + ') angelegt.');
     await renderTeamPage(profile);

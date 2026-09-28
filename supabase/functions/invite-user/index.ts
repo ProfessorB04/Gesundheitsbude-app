@@ -191,6 +191,19 @@ Deno.serve(async (req) => {
     const { data: prof } = await admin.from("profiles").select("role").eq("id", userId).single();
     if (prof && prof.role !== "admin") {
       const upd: Record<string, unknown> = { name, role: newRole };
+      // Bereichs-Rechte (nur Klient:innen): nur bekannte Bereiche + Stufen übernehmen
+      if (newRole === "client" && body.permissions && typeof body.permissions === "object") {
+        const allowed: Record<string, string[]> = {
+          therapieplan: ["none", "view", "edit"], labor: ["none", "view", "edit"],
+          tagebuch: ["none", "view", "edit"], videos: ["none", "view"],
+        };
+        const perms: Record<string, string> = {};
+        for (const [k, lv] of Object.entries(allowed)) {
+          const v = String((body.permissions as Record<string, unknown>)[k] ?? "");
+          if (lv.includes(v)) perms[k] = v;
+        }
+        upd.permissions = perms;
+      }
       if (username) upd.username = username;
       const { error: profErr } = await admin.from("profiles").update(upd).eq("id", userId);
       if (profErr) return json({ error: "Zugang angelegt, aber Rolle nicht gesetzt: " + profErr.message }, 500);
