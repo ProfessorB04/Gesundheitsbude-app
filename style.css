@@ -343,3 +343,11 @@ select{ -webkit-appearance:none; appearance:none; min-height:44px; padding-right
 .bp-item input{ margin-top:3px; accent-color:var(--pink); width:auto; }
 .bp-item small{ color:var(--ink-mute); }
 @media (max-width:560px){ .tp-step{ padding:14px; } .tp-tl-step{ min-width:70px; } .tp-tl-name{ font-size:.9rem; } .tp-phase-desc{ margin-left:0; } }
+@media (max-width:560px){
+  .tp-timeline{ gap:0; }
+  .tp-tl-step{ min-width:0; flex:1 1 0; }
+  .tp-tl-name{ font-size:.78rem; letter-spacing:0; }
+  .tp-tl-line{ flex:0 1 12px; min-width:6px; }
+  .tp-tl-dot{ width:36px; height:36px; font-size:.95rem; }
+  .tp-tl-line{ margin-top:18px; }
+}
