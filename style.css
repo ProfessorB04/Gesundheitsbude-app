@@ -425,3 +425,6 @@ select{ -webkit-appearance:none; appearance:none; min-height:44px; padding-right
 .di-dayhead{ font-weight:700; font-size:.85rem; color:var(--ink-soft); margin-bottom:6px; }
 .di-daygroup .di-entry{ margin-bottom:6px; border-left:3px solid var(--c); }
 @media (max-width:560px){ .di-week{ gap:3px; } .di-day{ padding:6px 0; border-radius:12px; } .di-date{ font-size:1.2rem; } .di-trend .di-spark{ width:140px; } }
+.di-scale{ display:grid; gap:4px; }
+.di-scale-btn{ min-width:0; width:100%; flex:none; }
+@media (max-width:560px){ .di-scale{ gap:3px; } .di-scale-btn{ height:40px; border-radius:10px; font-size:.9rem; } }

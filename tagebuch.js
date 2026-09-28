@@ -31,8 +31,8 @@ function diValueText(f, v) {
   if (v === undefined || v === null || v === '' || (Array.isArray(v) && !v.length)) return '';
   const o = f.options || {};
   if (f.type === 'yesno') return v ? 'ja' : 'nein';
-  if (f.type === 'scale') return `${v} / ${o.max ?? 10}`;
-  if (f.type === 'number') return `${v}${o.unit ? ' ' + o.unit : ''}`;
+  if (f.type === 'scale') return `${Number(v).toLocaleString('de-DE')} / ${o.max ?? 10}`;
+  if (f.type === 'number') return `${Number(v).toLocaleString('de-DE')}${o.unit ? ' ' + o.unit : ''}`;
   if (f.type === 'choice') return Array.isArray(v) ? v.join(', ') : String(v);
   return String(v);
 }
@@ -55,7 +55,7 @@ function diFieldInput(f, v) {
     const min = o.min ?? 1, max = o.max ?? 10;
     let btns = '';
     for (let i = min; i <= max; i++) btns += `<button type="button" class="di-scale-btn${String(v) === String(i) ? ' on' : ''}" data-v="${i}">${i}</button>`;
-    ctl = `<div class="di-scale" data-name="${name}" data-val="${v ?? ''}">${btns}</div>
+    ctl = `<div class="di-scale" data-name="${name}" data-val="${v ?? ''}" style="grid-template-columns:repeat(${max - min + 1}, 1fr)">${btns}</div>
       ${o.minLabel || o.maxLabel ? `<div class="di-scale-lbl"><span>${esc(o.minLabel || '')}</span><span>${esc(o.maxLabel || '')}</span></div>` : ''}`;
   } else if (f.type === 'yesno') {
     ctl = `<div class="di-choice yesno" data-name="${name}" data-val="${v === true ? 'true' : v === false ? 'false' : ''}">
