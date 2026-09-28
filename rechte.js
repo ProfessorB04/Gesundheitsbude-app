@@ -14,7 +14,7 @@ const PERM_AREAS = [
     levels: [['none', 'kein Zugriff'], ['view', 'ansehen']] },
 ];
 // Bereiche, die in der App schon fertig sind (die anderen sind vorbereitet und erscheinen, sobald sie gebaut sind)
-const PERM_READY = [];
+const PERM_READY = ['therapieplan'];
 
 function permOf(perms) { return Object.assign({}, PERM_DEFAULT, perms || {}); }
 

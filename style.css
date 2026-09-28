@@ -283,3 +283,63 @@ select{ -webkit-appearance:none; appearance:none; min-height:44px; padding-right
 .invite-perms[hidden]{ display:none; }
 .invite-perms-h{ font-weight:700; font-size:.9rem; color:var(--ink); margin-bottom:4px; }
 @media (max-width:640px){ .perm-table tr{ display:block; } .perm-table td{ display:block; width:auto !important; padding:6px 4px; } }
+
+/* ---------------- Therapieplan ---------------- */
+.tp-head-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.tp-head-row h2{ margin:0; }
+.tp-kicker{ font-size:.72rem; text-transform:uppercase; letter-spacing:.12em; color:var(--ink-mute); font-weight:700; }
+.tp-switch{ display:inline-flex; align-items:center; gap:8px; font-weight:600; font-size:.9rem; cursor:pointer; background:var(--glass-2); padding:8px 14px; border-radius:99px; }
+.tp-switch input{ accent-color:var(--pink); width:18px; height:18px; }
+.tp-timeline{ display:flex; align-items:flex-start; gap:0; margin:6px 0 10px; overflow-x:auto; padding:6px 2px; }
+.tp-tl-step{ display:flex; flex-direction:column; align-items:center; text-align:center; min-width:90px; flex:0 0 auto; }
+.tp-tl-dot{ width:42px; height:42px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:1.05rem;
+  border:2px solid color-mix(in srgb, var(--c) 60%, transparent); color:var(--ink-soft); background:var(--glass); }
+.tp-tl-step.current .tp-tl-dot{ background:var(--c); color:#101015; border-color:var(--c); box-shadow:0 0 0 6px color-mix(in srgb, var(--c) 25%, transparent); }
+.tp-tl-step.done .tp-tl-dot{ background:color-mix(in srgb, var(--c) 35%, transparent); color:#fff; border-color:var(--c); }
+.tp-tl-step.empty{ opacity:.45; }
+.tp-tl-name{ font-family:var(--display); font-size:1.05rem; margin-top:8px; letter-spacing:.02em; }
+.tp-tl-sub{ font-size:.75rem; color:var(--ink-mute); }
+.tp-tl-line{ flex:1 1 20px; min-width:20px; height:2px; background:var(--glass-line); margin-top:21px; }
+.tp-bar, .tp-mini{ height:8px; border-radius:99px; background:var(--glass); overflow:hidden; margin-bottom:22px; }
+.tp-bar span, .tp-mini span{ display:block; height:100%; background:linear-gradient(90deg, var(--blue), var(--pink)); border-radius:99px; }
+.tp-mini{ width:120px; height:6px; margin:0 0 4px; }
+.tp-phase{ margin-bottom:26px; }
+.tp-phase-h{ display:flex; align-items:center; gap:10px; font-size:1.45rem; margin:0 0 4px; }
+.tp-phase-no{ width:30px; height:30px; border-radius:50%; background:var(--c); color:#101015; display:inline-flex; align-items:center; justify-content:center; font-family:'Inter', sans-serif; font-weight:800; font-size:.95rem; }
+.tp-now{ font-family:'Inter', sans-serif; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; background:var(--c); color:#101015; padding:3px 9px; border-radius:99px; }
+.tp-phase-desc{ color:var(--ink-mute); font-size:.85rem; margin:0 0 12px 40px; }
+.tp-steps{ display:flex; flex-direction:column; gap:12px; }
+.tp-step{ background:var(--glass); border:1px solid var(--glass-line); border-left:5px solid var(--c); border-radius:18px; padding:16px 18px; }
+.tp-step.s-done{ opacity:.72; }
+.tp-step.s-done .tp-step-title{ text-decoration:line-through; text-decoration-color:rgba(255,255,255,.35); }
+.tp-step-head{ display:flex; justify-content:space-between; gap:10px; align-items:flex-start; flex-wrap:wrap; }
+.tp-step-tools{ display:flex; gap:6px; }
+.tp-cat{ display:inline-block; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--c, var(--sky)); border:1px solid color-mix(in srgb, var(--c, #3ebae6) 50%, transparent); padding:2px 8px; border-radius:99px; }
+.tp-step-title{ font-weight:800; font-size:1.1rem; margin-top:6px; }
+.tp-meta{ font-size:.8rem; color:var(--ink-soft); margin-top:3px; }
+.tp-text{ margin-top:10px; font-size:.92rem; color:var(--ink-soft); line-height:1.5; }
+.tp-line{ font-size:.85rem; margin-top:6px; color:var(--ink-soft); }
+.tp-line b{ color:var(--ink); font-weight:600; }
+.tp-status-btns{ display:flex; gap:6px; flex-wrap:wrap; margin-top:12px; }
+.tp-sbtn{ background:transparent; border:1px solid var(--glass-line); color:var(--ink-soft); padding:8px 14px; font-size:.85rem; }
+.tp-sbtn:hover{ background:var(--glass-2); }
+.tp-sbtn.on.s-open{ background:var(--glass-2); color:#fff; border-color:rgba(255,255,255,.35); }
+.tp-sbtn.on.s-doing{ background:rgba(255,200,87,.2); color:var(--amber); border-color:var(--amber); }
+.tp-sbtn.on.s-done{ background:rgba(61,220,151,.2); color:var(--ok); border-color:var(--ok); }
+.tp-status{ display:inline-block; margin-top:12px; font-size:.8rem; font-weight:700; padding:4px 12px; border-radius:99px; background:var(--glass-2); }
+.tp-status.s-doing{ color:var(--amber); } .tp-status.s-done{ color:var(--ok); }
+.tp-note{ width:100%; margin-top:10px; font-size:.88rem; }
+.tp-pnote{ margin-top:10px; font-size:.85rem; background:rgba(62,186,230,.1); border:1px solid rgba(62,186,230,.25); padding:8px 12px; border-radius:12px; }
+.tp-when{ font-size:.72rem; color:var(--ink-mute); margin-top:6px; }
+.tp-add{ display:flex; gap:8px; flex-wrap:wrap; margin-top:10px; }
+.tp-hero{ background:linear-gradient(206deg, rgba(20,16,224,.7) 0%, rgba(229,0,125,.25) 100%), var(--glass); }
+.tp-intro{ color:var(--ink-soft); margin:0 0 10px; }
+.tp-hero-stat{ font-size:.9rem; color:var(--ink-soft); }
+.tp-hero-stat b{ color:#fff; font-size:1.1rem; }
+.wide-modal{ max-width:900px !important; }
+.bp-list{ max-height:50vh; overflow:auto; display:flex; flex-direction:column; gap:6px; }
+.bp-item{ display:flex !important; flex-direction:row !important; gap:10px !important; align-items:flex-start; padding:10px 12px; border-radius:12px; border:1px solid var(--glass-line); border-left:4px solid var(--c); cursor:pointer; color:var(--ink) !important; font-size:.9rem !important; }
+.bp-item:has(input:checked){ background:color-mix(in srgb, var(--c) 18%, transparent); }
+.bp-item input{ margin-top:3px; accent-color:var(--pink); width:auto; }
+.bp-item small{ color:var(--ink-mute); }
+@media (max-width:560px){ .tp-step{ padding:14px; } .tp-tl-step{ min-width:70px; } .tp-tl-name{ font-size:.9rem; } .tp-phase-desc{ margin-left:0; } }
