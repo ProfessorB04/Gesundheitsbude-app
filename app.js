@@ -66,11 +66,13 @@ const can = (profile, area) => perm(profile, area) !== 'none';
 // Neue Bereiche: hier eintragen (+ Kachel in MENU_TILES + Fall in navigate)
 const NAV_ITEMS = [
   { key: 'menu', label: 'Dashboard', icon: '&#127968;', show: () => true },
+  { key: 'bausteine', label: 'Therapiebausteine', icon: '&#129513;', show: p => isStaff(p) },
   { key: 'team', label: 'Nutzerverwaltung', icon: '&#128101;', show: p => isAdmin(p) },
   { key: 'konto', label: 'Mein Konto', icon: '&#128100;', show: () => true },
 ];
 
 const MENU_TILES = [
+  { key: 'bausteine', tint: 'tint-sky', icon: '&#129513;', title: 'Therapiebausteine', sub: 'Datenbank: Diagnostik, Labor, Ern&auml;hrung, Bewegung, Therapie, Produkte &mdash; Kategorien, Import/Export Excel' },
   { key: 'team', tint: 'tint-blue', icon: '&#128101;', title: 'Nutzerverwaltung', sub: 'Zug&auml;nge anlegen, Rollen verwalten, Einmalpassw&ouml;rter' },
   { key: 'konto', tint: 'tint-pink', icon: '&#128100;', title: 'Mein Konto', sub: 'Benutzername und Passwort &auml;ndern' },
 ];
@@ -79,6 +81,7 @@ function navigate(profile, key) {
   const item = NAV_ITEMS.find(x => x.key === key);
   if (!item || !item.show(profile)) { renderMenu(profile); return; }
   if (key === 'menu') renderMenu(profile);
+  else if (key === 'bausteine') renderBlocksPage(profile);
   else if (key === 'team') renderTeamPage(profile);
   else if (key === 'konto') renderAccountPage(profile);
 }

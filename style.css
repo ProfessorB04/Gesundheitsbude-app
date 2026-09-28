@@ -224,3 +224,44 @@ th{ font-size:.72rem; text-transform:uppercase; letter-spacing:.06em; color:var(
   .inline-form{ flex-direction:column; align-items:stretch; }
   .hero img{ border-radius:16px; padding:10px 12px; }
 }
+
+/* ---------------- Dialoge ---------------- */
+.modal-scrim{ position:fixed; inset:0; background:rgba(0,0,0,.6); z-index:60; display:flex; align-items:flex-start; justify-content:center; padding:40px 16px; overflow-y:auto; }
+.modal{ background:linear-gradient(206deg, var(--glass-2) 0%, rgba(51,51,64,.05) 100%), #1b1b24; border:1px solid var(--glass-line); border-radius:22px; padding:24px; width:100%; max-width:720px; box-shadow:0 30px 70px rgba(0,0,0,.55); }
+.modal h2{ margin:0 0 14px; font-size:1.4rem; }
+.modal-form{ display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.modal-form label{ display:flex; flex-direction:column; font-size:.82rem; color:var(--ink-soft); gap:5px; }
+.modal-form label.check{ flex-direction:row; align-items:center; gap:8px; }
+.modal-form input:not([type=checkbox]):not([type=color]), .modal-form select, .modal-form textarea{ width:100%; }
+.modal-form textarea{ resize:vertical; line-height:1.4; }
+.modal-form .wide{ grid-column:1 / -1; }
+.modal-actions{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+.spacer{ flex:1; }
+.nowrap{ white-space:nowrap; }
+@media (max-width:560px){ .modal-form{ grid-template-columns:1fr; } .modal{ padding:18px; } }
+
+/* ---------------- Therapiebausteine ---------------- */
+.tb-toolbar{ display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-bottom:14px; }
+.tb-toolbar input[type=search]{ flex:1 1 260px; min-width:0; }
+.tb-filter{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:8px; }
+.tb-chip{ background:transparent; border:1px solid color-mix(in srgb, var(--c) 55%, transparent); color:var(--ink-soft); padding:6px 14px; font-size:.82rem; }
+.tb-chip span{ opacity:.6; margin-left:4px; }
+.tb-chip:hover{ background:color-mix(in srgb, var(--c) 15%, transparent); }
+.tb-chip.on{ background:color-mix(in srgb, var(--c) 30%, transparent); color:#fff; border-color:var(--c); }
+.tb-inactive{ display:inline-flex; align-items:center; gap:6px; font-size:.8rem; color:var(--ink-mute); margin-bottom:14px; }
+.tb-group{ font-size:1.25rem; margin:22px 0 10px; display:flex; align-items:center; gap:10px; }
+.tb-group::before{ content:""; width:12px; height:12px; border-radius:50%; background:var(--c); }
+.tb-group span{ font-family:'Inter', sans-serif; font-size:.8rem; color:var(--ink-mute); }
+.tb-grid{ display:grid; grid-template-columns:repeat(auto-fill, minmax(260px, 1fr)); gap:12px; }
+.tb-card{ text-align:left; display:flex; flex-direction:column; gap:5px; background:var(--glass); border:1px solid var(--glass-line); border-left:4px solid var(--c); border-radius:16px; padding:14px 16px; color:var(--ink); font-weight:400; }
+.tb-card:hover{ background:var(--glass-2); }
+.tb-card.inactive{ opacity:.5; }
+.tb-title{ font-weight:700; font-size:.98rem; }
+.tb-title em{ font-weight:400; font-size:.8rem; }
+.tb-line{ font-size:.8rem; color:var(--ink-soft); }
+.tb-desc{ font-size:.8rem; color:var(--ink-mute); display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
+.tb-tags i{ font-style:normal; font-size:.72rem; color:var(--sky); }
+.tb-cattable td{ padding:6px; border:0; }
+.tb-cattable input[type=text]{ width:100%; }
+input[type=color]{ width:42px; height:36px; padding:2px; border-radius:10px; cursor:pointer; }
+.tb-steps{ padding-left:20px; color:var(--ink-soft); line-height:1.6; }
