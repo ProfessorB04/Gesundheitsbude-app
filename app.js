@@ -68,7 +68,9 @@ const can = (profile, area) => perm(profile, area) !== 'none';
 const NAV_ITEMS = [
   { key: 'menu', label: 'Dashboard', icon: '&#127968;', show: () => true },
   { key: 'meinplan', label: 'Mein Therapieplan', icon: '&#128506;', show: p => !isStaff(p) && can(p, 'therapieplan') },
+  { key: 'meintagebuch', label: 'Mein Tagebuch', icon: '&#128211;', show: p => !isStaff(p) && can(p, 'tagebuch') },
   { key: 'plaene', label: 'Therapiepläne', icon: '&#128506;', show: p => isStaff(p) },
+  { key: 'tagebuch', label: 'Tagebuch', icon: '&#128211;', show: p => isStaff(p) },
   { key: 'bausteine', label: 'Therapiebausteine', icon: '&#129513;', show: p => isStaff(p) },
   { key: 'team', label: 'Nutzerverwaltung', icon: '&#128101;', show: p => isAdmin(p) },
   { key: 'konto', label: 'Mein Konto', icon: '&#128100;', show: () => true },
@@ -76,10 +78,12 @@ const NAV_ITEMS = [
 
 const MENU_TILES = [
   { key: 'meinplan', tint: 'tint-blue', icon: '&#128506;', title: 'Mein Therapieplan', sub: 'Deine n&auml;chsten Schritte: Diagnostik, Auswertung, Therapie, Kontrolle' },
+  { key: 'meintagebuch', tint: 'tint-pink', icon: '&#128211;', title: 'Mein Tagebuch', sub: 'Heute eintragen: Befinden, Schlaf, Ern&auml;hrung &hellip;' },
+  { key: 'tagebuch', tint: 'tint-pink', icon: '&#128211;', title: 'Tagebuch', sub: 'Kategorien &amp; Felder bauen, Klient:innen zuweisen, Eintr&auml;ge und Verlauf ansehen' },
   { key: 'plaene', tint: 'tint-blue', icon: '&#128506;', title: 'Therapiepl&auml;ne', sub: 'Plan je Klient:in in Phasen zusammenstellen, freigeben, Fortschritt sehen' },
   { key: 'bausteine', tint: 'tint-sky', icon: '&#129513;', title: 'Therapiebausteine', sub: 'Datenbank: Diagnostik, Labor, Ern&auml;hrung, Bewegung, Therapie, Produkte &mdash; Kategorien, Import/Export Excel' },
   { key: 'team', tint: '', icon: '&#128101;', title: 'Nutzerverwaltung', sub: 'Zug&auml;nge anlegen, Rollen verwalten, Einmalpassw&ouml;rter' },
-  { key: 'konto', tint: 'tint-pink', icon: '&#128100;', title: 'Mein Konto', sub: 'Benutzername und Passwort &auml;ndern' },
+  { key: 'konto', tint: '', icon: '&#128100;', title: 'Mein Konto', sub: 'Benutzername und Passwort &auml;ndern' },
 ];
 
 function navigate(profile, key) {
@@ -89,6 +93,8 @@ function navigate(profile, key) {
   else if (key === 'bausteine') renderBlocksPage(profile);
   else if (key === 'plaene') renderPlansPage(profile);
   else if (key === 'meinplan') renderMyPlan(profile);
+  else if (key === 'tagebuch') renderDiaryAdmin(profile);
+  else if (key === 'meintagebuch') renderMyDiary(profile);
   else if (key === 'team') renderTeamPage(profile);
   else if (key === 'konto') renderAccountPage(profile);
 }
