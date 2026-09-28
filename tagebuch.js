@@ -316,18 +316,21 @@ function diCatDialog(profile, c) {
     m.el.querySelectorAll('.di-frow').forEach((row, i) => {
       const f = fields[i];
       f.label = row.querySelector('.f_label').value;
-      f.type = row.querySelector('.f_type').value;
       f.required = row.querySelector('.f_req').checked;
+      // Optionen nach dem Typ lesen, der gerade angezeigt wird (nicht nach dem neu gewählten)
+      const shown = row.dataset.type;
       const o = {};
-      if (f.type === 'scale') {
+      if (shown === 'scale') {
         o.min = Number(row.querySelector('.o_min').value || 1); o.max = Number(row.querySelector('.o_max').value || 10);
         o.minLabel = row.querySelector('.o_minl').value.trim(); o.maxLabel = row.querySelector('.o_maxl').value.trim();
-      } else if (f.type === 'number') o.unit = row.querySelector('.o_unit').value.trim();
-      else if (f.type === 'choice') {
+      } else if (shown === 'number') o.unit = row.querySelector('.o_unit').value.trim();
+      else if (shown === 'choice') {
         o.choices = row.querySelector('.o_choices').value.split(',').map(x => x.trim()).filter(Boolean);
         o.multi = row.querySelector('.o_multi').checked;
       }
       f.options = o;
+      f.type = row.querySelector('.f_type').value;
+      if (f.type !== shown) f.options = f.type === 'scale' ? { min: 1, max: 10 } : {};
     });
   };
   const optHtml = (f) => {
@@ -342,7 +345,7 @@ function diCatDialog(profile, c) {
   };
   const draw = () => {
     $('c_fields').innerHTML = fields.map((f, i) => `
-      <div class="di-frow">
+      <div class="di-frow" data-type="${f.type}">
         <div class="di-frow-main">
           <input type="text" class="f_label" value="${esc(f.label)}" placeholder="Frage / Feldname">
           <select class="f_type">${Object.entries(DI_TYPES).map(([k, v]) => `<option value="${k}" ${f.type === k ? 'selected' : ''}>${v}</option>`).join('')}</select>
@@ -353,7 +356,7 @@ function diCatDialog(profile, c) {
         </div>
         <div class="di-frow-opts">${optHtml(f)}</div>
       </div>`).join('') || '<p class="muted">Noch keine Felder &mdash; mit &bdquo;+ Feld&ldquo; hinzuf&uuml;gen.</p>';
-    m.el.querySelectorAll('.f_type').forEach((s, i) => { s.onchange = () => { readRows(); fields[i].type = s.value; fields[i].options = {}; draw(); }; });
+    m.el.querySelectorAll('.f_type').forEach(s => { s.onchange = () => { readRows(); draw(); }; });
     m.el.querySelectorAll('[data-up]').forEach(b => { b.onclick = () => { readRows(); const i = +b.dataset.up; if (i > 0) [fields[i - 1], fields[i]] = [fields[i], fields[i - 1]]; draw(); }; });
     m.el.querySelectorAll('[data-down]').forEach(b => { b.onclick = () => { readRows(); const i = +b.dataset.down; if (i < fields.length - 1) [fields[i + 1], fields[i]] = [fields[i], fields[i + 1]]; draw(); }; });
     m.el.querySelectorAll('[data-rm]').forEach(b => { b.onclick = () => { readRows(); fields.splice(+b.dataset.rm, 1); draw(); }; });
