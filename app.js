@@ -77,11 +77,11 @@ const NAV_ITEMS = [
 ];
 
 const MENU_TILES = [
-  { key: 'meinplan', tint: 'tint-blue', icon: '&#128506;', title: 'Mein Therapieplan', sub: 'Deine n&auml;chsten Schritte: Diagnostik, Auswertung, Therapie, Kontrolle' },
-  { key: 'meintagebuch', tint: 'tint-pink', icon: '&#128211;', title: 'Mein Tagebuch', sub: 'Heute eintragen: Befinden, Schlaf, Ern&auml;hrung &hellip;' },
-  { key: 'tagebuch', tint: 'tint-pink', icon: '&#128211;', title: 'Tagebuch', sub: 'Kategorien &amp; Felder bauen, Klient:innen zuweisen, Eintr&auml;ge und Verlauf ansehen' },
-  { key: 'plaene', tint: 'tint-blue', icon: '&#128506;', title: 'Therapiepl&auml;ne', sub: 'Plan je Klient:in in Phasen zusammenstellen, freigeben, Fortschritt sehen' },
-  { key: 'bausteine', tint: 'tint-sky', icon: '&#129513;', title: 'Therapiebausteine', sub: 'Datenbank: Diagnostik, Labor, Ern&auml;hrung, Bewegung, Therapie, Produkte &mdash; Kategorien, Import/Export Excel' },
+  { key: 'meinplan', tint: 'tint-blue', icon: '&#128506;', title: 'Mein Therapieplan', sub: 'Deine Termine, Aufgaben und Eintr&auml;ge &mdash; Schritt f&uuml;r Schritt durch dein Programm' },
+  { key: 'meintagebuch', tint: 'tint-pink', icon: '&#128211;', title: 'Mein Tagebuch', sub: 'Deine Routinen abhaken und eintragen: Befinden, Schlaf, Ern&auml;hrung &hellip;' },
+  { key: 'tagebuch', tint: 'tint-pink', icon: '&#128211;', title: 'Tagebuch', sub: 'Routinen freischalten, Kategorien &amp; Felder zuweisen, Umsetzung, Eintr&auml;ge und Verlauf ansehen' },
+  { key: 'plaene', tint: 'tint-blue', icon: '&#128506;', title: 'Therapiepl&auml;ne', sub: 'Paket w&auml;hlen, Plan aus Bausteinen bef&uuml;llen und anpassen, Termine, Eintr&auml;ge &amp; Fortschritt' },
+  { key: 'bausteine', tint: 'tint-sky', icon: '&#129513;', title: 'Therapiebausteine', sub: 'Aufgaben-Datenbank: 7 Themenfelder &times; 4 Phasen, Pakete, Typen &mdash; Import/Export Excel + JSON' },
   { key: 'team', tint: '', icon: '&#128101;', title: 'Nutzerverwaltung', sub: 'Zug&auml;nge anlegen, Rollen verwalten, Einmalpassw&ouml;rter' },
   { key: 'konto', tint: '', icon: '&#128100;', title: 'Mein Konto', sub: 'Benutzername und Passwort &auml;ndern' },
 ];

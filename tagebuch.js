@@ -170,9 +170,10 @@ async function renderMyDiary(profile, date) {
   await diLoad();
   const weekStart = diMonday(date);
   const from = diAddDays(date, -6) < weekStart ? diAddDays(date, -6) : weekStart;
-  const [as, en] = await Promise.all([
+  const [as, en, rt] = await Promise.all([
     sb.from('diary_assignments').select('*').eq('patient_id', profile.id),
     sb.from('diary_entries').select('*').eq('patient_id', profile.id).gte('entry_date', from).lte('entry_date', diAddDays(weekStart, 6)).order('entry_time'),
+    rtLoadMine(profile, from, diAddDays(weekStart, 6)),
   ]);
   const assigns = (as.data || []).filter(a => diCat(a.category_id) && diCat(a.category_id).active);
   const entries = en.data || [];
@@ -187,7 +188,7 @@ async function renderMyDiary(profile, date) {
       const c = diCat(a.category_id);
       const has = entries.some(e => e.entry_date === d && e.category_id === a.category_id);
       return `<i class="${has ? 'on' : ''}" style="--c:${c.color}"></i>`;
-    }).join('');
+    }).join('') + (() => { const st = rtDayState(rt, d); return st ? `<i class="rt-dot ${st}" title="Routinen"></i>` : ''; })();
     return `<button type="button" class="di-day${d === date ? ' sel' : ''}${d === today ? ' today' : ''}" data-day="${d}" ${d > today ? 'disabled' : ''}>
       <span>${new Date(d + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short' })}</span><b>${d.slice(8)}</b><div class="di-dots">${dots}</div></button>`;
   }).join('');
@@ -220,8 +221,9 @@ async function renderMyDiary(profile, date) {
       ${date !== today ? '<button type="button" class="secondary small-btn" id="diToday">Heute</button>' : ''}
     </div>
     <div class="di-week">${strip}</div>
-    ${!assigns.length ? '<div class="card"><h2>Noch nichts zugewiesen</h2><p class="muted">Die Praxis legt fest, was du in dein Tagebuch eintr&auml;gst. Sobald das passiert ist, erscheint es hier.</p></div>'
-      : (cards || '<div class="card"><p class="muted">F&uuml;r diesen Tag ist nichts vorgesehen.</p></div>')}
+    ${rtMineHtml(rt, date, canEdit)}
+    ${!assigns.length ? (rt.assigns.length ? '' : '<div class="card"><h2>Noch nichts zugewiesen</h2><p class="muted">Die Praxis legt fest, was du in dein Tagebuch eintr&auml;gst. Sobald das passiert ist, erscheint es hier.</p></div>')
+      : (cards || (rt.assigns.some(a => rtActiveOn(a, date)) ? '' : '<div class="card"><p class="muted">F&uuml;r diesen Tag ist nichts vorgesehen.</p></div>'))}
     ${canEdit ? '' : '<p class="hint">Du kannst dein Tagebuch ansehen. Eintragen ist f&uuml;r dich gerade nicht freigeschaltet.</p>'}`;
   renderShell(profile, 'meintagebuch', 'Mein Tagebuch', content);
   const again = () => renderMyDiary(profile, date);
@@ -230,6 +232,7 @@ async function renderMyDiary(profile, date) {
   const t = document.getElementById('diToday'); if (t) t.onclick = () => renderMyDiary(profile, today);
   appEl.querySelectorAll('[data-day]').forEach(b => { b.onclick = () => renderMyDiary(profile, b.dataset.day); });
   appEl.querySelectorAll('[data-add]').forEach(b => { b.onclick = () => diEntryDialog(profile.id, diCat(b.dataset.add), date, null, again); });
+  if (canEdit) rtWireMine(profile, rt, date, again);
   if (canEdit) appEl.querySelectorAll('[data-entry]').forEach(el => {
     el.onclick = () => { const e = entries.find(x => x.id === el.dataset.entry); diEntryDialog(profile.id, diCat(e.category_id), e.entry_date, e, again); };
   });
@@ -245,8 +248,10 @@ async function renderDiaryAdmin(profile, tab) {
   await diLoad();
   const tabs = `<div class="di-tabs">
     <button type="button" class="${DI_TAB === 'patients' ? 'on' : ''}" data-tab="patients">Klient:innen</button>
+    <button type="button" class="${DI_TAB === 'routines' ? 'on' : ''}" data-tab="routines">Routinen</button>
     <button type="button" class="${DI_TAB === 'cats' ? 'on' : ''}" data-tab="cats">Kategorien &amp; Felder</button></div>`;
   let body = '';
+  if (DI_TAB === 'routines') { rtRenderLibrary(profile, tabs); return; }
   if (DI_TAB === 'cats') {
     body = `<div class="modal-actions" style="margin-bottom:14px;"><button type="button" id="diNewCat">+ Kategorie</button>
       <span class="hint">Kategorien sind Vorlagen. Du weist sie danach einzelnen Klient:innen zu.</span></div>
@@ -258,26 +263,33 @@ async function renderDiaryAdmin(profile, tab) {
         </button>`).join('')}</div>`;
   } else {
     const since = diAddDays(diToday(), -6);
-    const [pr, as, en] = await Promise.all([
+    const [pr, as, en, ra, rl] = await Promise.all([
       sb.from('profiles').select('id, name, permissions').eq('role', 'client'),
       sb.from('diary_assignments').select('*'),
       sb.from('diary_entries').select('patient_id, entry_date').gte('entry_date', diAddDays(diToday(), -60)),
+      sb.from('routine_assignments').select('*'),
+      sb.from('routine_logs').select('patient_id, routine_id, log_date').gte('log_date', since),
     ]);
+    const days7Arr = Array.from({ length: 7 }, (_, i) => diAddDays(since, i));
     const patients = (pr.data || []).sort((a, b) => a.name.localeCompare(b.name, 'de'));
     const rows = patients.map(u => {
       const my = (as.data || []).filter(a => a.patient_id === u.id && a.active);
       const e = (en.data || []).filter(x => x.patient_id === u.id);
       const last = e.reduce((m, x) => x.entry_date > m ? x.entry_date : m, '');
       const days7 = new Set(e.filter(x => x.entry_date >= since).map(x => x.entry_date)).size;
+      const myR = (ra.data || []).filter(a => a.patient_id === u.id && a.active && a.frequency !== 'bedarf');
+      const rlogs = (rl.data || []).filter(l => l.patient_id === u.id);
+      const rsum = myR.reduce((acc, a) => { const x = rtAdherence(a, rlogs, days7Arr); acc.d += Math.min(x.done, x.target || 0); acc.t += x.target || 0; return acc; }, { d: 0, t: 0 });
       return `<tr>
         <td><span class="uname-name">${esc(u.name)}</span>${can(u, 'tagebuch') ? '' : '<div class="status-mail">&#9888; Recht &bdquo;Tagebuch&ldquo; fehlt</div>'}</td>
         <td><div class="chips">${my.map(a => { const c = diCat(a.category_id); return c ? `<span class="chip" style="background:color-mix(in srgb, ${c.color} 22%, transparent);color:#fff;">${c.icon} ${esc(c.name)}</span>` : ''; }).join('') || '<span class="muted">nichts zugewiesen</span>'}</div></td>
+        <td>${myR.length ? `${myR.length} aktiv${rsum.t ? ` &middot; <b>${Math.round(rsum.d / rsum.t * 100)}&nbsp;%</b>` : ''}` : '<span class="muted">&ndash;</span>'}</td>
         <td>${days7 ? `<b>${days7}</b> / 7 Tage` : '<span class="muted">&ndash;</span>'}</td>
         <td>${last ? diFmt(last) : '<span class="muted">&ndash;</span>'}</td>
         <td><button type="button" class="secondary small-btn" data-open="${u.id}">&Ouml;ffnen</button></td></tr>`;
-    }).join('') || `<tr><td colspan="5" class="muted">Noch keine Klient:innen.</td></tr>`;
+    }).join('') || `<tr><td colspan="6" class="muted">Noch keine Klient:innen.</td></tr>`;
     body = `<div class="card"><div class="tablewrap"><table class="user-table">
-      <thead><tr><th>Name</th><th>Zugewiesen</th><th>Letzte 7 Tage</th><th>Letzter Eintrag</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th>Kategorien</th><th>Routinen (7 Tage)</th><th>Eintr&auml;ge 7 Tage</th><th>Letzter Eintrag</th><th></th></tr></thead>
       <tbody>${rows}</tbody></table></div></div>`;
     renderShell(profile, 'tagebuch', 'Tagebuch', tabs + body);
     appEl.querySelectorAll('[data-open]').forEach(b => { b.onclick = () => renderDiaryPatient(profile, patients.find(p => p.id === b.dataset.open)); });
@@ -407,13 +419,14 @@ let DI_RANGE = 14;
 async function renderDiaryPatient(profile, patient, catFilter) {
   await diLoad();
   const from = diAddDays(diToday(), -(DI_RANGE - 1));
-  const [as, en] = await Promise.all([
+  const days = Array.from({ length: DI_RANGE }, (_, i) => diAddDays(diToday(), -(DI_RANGE - 1 - i)));
+  const [as, en, rt] = await Promise.all([
     sb.from('diary_assignments').select('*').eq('patient_id', patient.id),
     sb.from('diary_entries').select('*').eq('patient_id', patient.id).gte('entry_date', from).order('entry_date', { ascending: false }).order('entry_time', { ascending: false }),
+    rtLoadPatient(patient.id, days),
   ]);
   const assigns = as.data || [];
   const entries = (en.data || []).filter(e => !catFilter || e.category_id === catFilter);
-  const days = Array.from({ length: DI_RANGE }, (_, i) => diAddDays(diToday(), -(DI_RANGE - 1 - i)));
 
   // Verlauf der Skalen-Felder (Tagesmittel) als kleine Linien
   const spark = (vals, min, max, color) => {
@@ -451,7 +464,7 @@ async function renderDiaryPatient(profile, patient, catFilter) {
   const content = `
     <div class="card">
       <div class="tp-head-row"><div><div class="tp-kicker">Tagebuch von</div><h2 style="margin:0;">${esc(patient.name)}</h2></div>
-        <span class="spacer"></span><button type="button" class="small-btn" id="daAssign">+ Kategorien zuweisen</button></div>
+        <span class="spacer"></span><button type="button" class="secondary small-btn" id="daAssign">+ Kategorien zuweisen</button></div>
       ${can(patient, 'tagebuch') ? (perm(patient, 'tagebuch') === 'view' ? '<p class="notice">Recht &bdquo;Tagebuch&ldquo; steht auf <b>nur ansehen</b> &mdash; zum Eintragen in der Nutzerverwaltung auf &bdquo;eintragen&ldquo; stellen.</p>' : '')
         : '<p class="notice">&#9888; Das Recht &bdquo;Tagebuch&ldquo; fehlt &mdash; in der Nutzerverwaltung unter &bdquo;Rechte&ldquo; freischalten.</p>'}
       <div class="di-assigns">${assigns.map(a => { const c = diCat(a.category_id); if (!c) return '';
@@ -461,6 +474,7 @@ async function renderDiaryPatient(profile, patient, catFilter) {
           ${a.note ? `<span class="di-card-sub">&#128204; ${esc(a.note)}</span>` : ''}
           <button type="button" class="link-btn" data-edit-assign="${a.id}">bearbeiten</button></div>`; }).join('') || '<p class="muted">Noch nichts zugewiesen.</p>'}</div>
     </div>
+    ${rtPatientCardHtml(rt, days)}
     <div class="di-filter">
       <select id="daRange">${[7, 14, 30, 90].map(n => `<option value="${n}" ${DI_RANGE === n ? 'selected' : ''}>letzte ${n} Tage</option>`).join('')}</select>
       <select id="daCat"><option value="">alle Kategorien</option>${assigns.map(a => diCat(a.category_id)).filter(Boolean).map(c => `<option value="${c.id}" ${catFilter === c.id ? 'selected' : ''}>${c.icon} ${esc(c.name)}</option>`).join('')}</select>
@@ -472,6 +486,7 @@ async function renderDiaryPatient(profile, patient, catFilter) {
   document.getElementById('daRange').onchange = (e) => { DI_RANGE = +e.target.value; again(); };
   document.getElementById('daCat').onchange = (e) => renderDiaryPatient(profile, patient, e.target.value || null);
   document.getElementById('daAssign').onclick = () => diAssignDialog(patient, assigns, null, again);
+  rtWirePatientCard(patient, rt, again);
   appEl.querySelectorAll('[data-edit-assign]').forEach(b => { b.onclick = () => diAssignDialog(patient, assigns, assigns.find(a => a.id === b.dataset.editAssign), again); });
   appEl.querySelectorAll('[data-entry]').forEach(el => {
     el.onclick = () => { const e = entries.find(x => x.id === el.dataset.entry); diEntryDialog(patient.id, diCat(e.category_id), e.entry_date, e, again); };
