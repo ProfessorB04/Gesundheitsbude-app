@@ -400,7 +400,8 @@ async function renderBefundePatient(profile, patient) {
     <div class="card">
       <div class="tp-head-row"><div><div class="tp-kicker">Akte</div><h2 style="margin:0;">${esc(patient.name)}</h2></div><span class="spacer"></span>
         <button type="button" id="mdImport">&#128229; Plan importieren</button>
-        <button type="button" class="secondary" id="mdUpload">Dokument hochladen</button></div>
+        <button type="button" class="secondary" id="mdUpload">Dokument hochladen</button>
+        <button type="button" class="secondary" id="mdExport" title="Alle Daten dieser Person als ZIP (Auskunft / Datenübertragbarkeit)">&#11015; Datenexport</button></div>
       <div class="md-facts">
         <span>${cd ? `&#127800; Zyklustag <b>${cd}</b> (Periode seit ${mdFmt(starts[0].start_date)})` : (hasCycleMeds ? '&#9888; Zyklus-Einnahmen, aber noch kein Periodenbeginn eingetragen' : '&#127800; kein Periodenbeginn eingetragen')}</span>
         ${cd && cd > 35 ? '<span class="pg-badge warn">Zyklus &gt; 35 Tage &ndash; ggf. Zyklus-Einnahmen anpassen</span>' : ''}
@@ -424,6 +425,7 @@ async function renderBefundePatient(profile, patient) {
   const again = () => renderBefundePatient(profile, patient);
   document.getElementById('mdImport').onclick = () => mdPickFile('.docx,.pdf', f => mdImportFile(profile, patient, f, again));
   document.getElementById('mdUpload').onclick = () => mdUploadDialog(profile, patient, again);
+  document.getElementById('mdExport').onclick = () => dsExport(patient.id, patient.name, false);
   document.getElementById('mdAdd').onclick = () => mdMedDialog(profile, patient, null, again);
   document.getElementById('mdLabAdd').onclick = () => mdLabDialog(patient, null, [], again);
   document.getElementById('mdCycle').onclick = () => mdCycleDialog(patient, starts, again);

@@ -589,3 +589,18 @@ select{ -webkit-appearance:none; appearance:none; min-height:44px; padding-right
   .md-row{ grid-template-columns:1fr auto; } .md-row .link-btn{ grid-column:1 / -1; justify-self:start; }
   .md-docs tr{ display:block; padding:8px 0; border-bottom:1px solid var(--glass-line); } .md-docs td{ display:block; padding:3px 0; }
 }
+
+/* ---------------- Datenschutz: 2-Faktor, Einwilligung ---------------- */
+.ds-card{ max-width:560px; }
+.ds-text{ font-size:.88rem; color:var(--ink-soft); line-height:1.55; }
+.ds-text h3{ font-size:1rem; margin:14px 0 4px; color:var(--ink); }
+.ds-text ul{ padding-left:18px; margin:4px 0; }
+.ds-consent{ max-height:42vh; overflow:auto; background:rgba(16,16,21,.5); border:1px solid var(--glass-line); border-radius:14px; padding:12px 14px; margin:10px 0 14px; text-align:left; }
+.ds-check{ display:flex !important; flex-direction:row !important; gap:10px; align-items:flex-start; font-size:.85rem; text-align:left; font-weight:400 !important; }
+.ds-check input{ width:auto; margin-top:3px; accent-color:var(--pink); flex:0 0 auto; }
+.ds-steps{ text-align:left; font-size:.88rem; color:var(--ink-soft); padding-left:20px; }
+.ds-steps li{ margin-bottom:8px; }
+.ds-qr{ background:#fff; border-radius:12px; padding:10px; display:inline-block; margin:8px 0; }
+.ds-qr canvas{ width:180px; height:180px; display:block; }
+.ds-secret{ display:block; word-break:break-all; background:var(--field); padding:8px; border-radius:8px; margin-top:6px; font-size:.8rem; }
+.ds-sec{ display:flex; justify-content:space-between; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid var(--glass-line); flex-wrap:wrap; }

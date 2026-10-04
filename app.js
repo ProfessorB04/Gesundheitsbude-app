@@ -233,7 +233,8 @@ async function renderAccountPage(profile) {
         <p class="error" id="accPwErr"></p>
       </form>
     </div>`;
-  renderShell(profile, 'konto', 'Mein Konto', content);
+  renderShell(profile, 'konto', 'Mein Konto', content + await dsAccountCardsHtml(profile));
+  dsWireAccount(profile, () => renderAccountPage(profile));
   const unIn = document.getElementById('accUname');
   unIn.addEventListener('input', () => { unIn.value = unIn.value.toLowerCase().replace(/\s/g, ''); });
   document.getElementById('accUnameForm').onsubmit = async (e) => {
@@ -284,6 +285,7 @@ function renderAuth() {
         </form>
         <p class="hint" style="margin-top:16px;text-align:center;"><a href="#" id="forgotToggle">Passwort vergessen?</a></p>
         <p class="hint" style="text-align:center;">Kein Zugang? Zug&auml;nge werden ausschlie&szlig;lich pers&ouml;nlich von der Praxis vergeben.</p>
+        <p class="hint" style="text-align:center;"><a href="#" data-privacy>Datenschutz</a></p>
       </div>
     </main>
   `;
@@ -388,6 +390,7 @@ async function renderDashboard(user) {
     return;
   }
   if (window.appIdleStart) window.appIdleStart(sb, profile.role);   // Auto-Abmeldung nur Admin/Team
+  if (!(await dsGate(profile, user))) return;                         // 2. Faktor / Einwilligung
   const hashKey = (window.location.hash || '').slice(1);
   if (hashKey) {
     history.replaceState(null, '', window.location.pathname);
@@ -423,6 +426,14 @@ async function renderTeamPage(profile) {
     if (st.must_change) return `<span class="status-pill half" title="Mit Einmalpasswort angemeldet, eigenes Passwort noch nicht festgelegt">Eigenes Passwort fehlt</span>${mail}`;
     return `<span class="status-pill ok">Aktiv</span> <span class="status-when">zuletzt ${fmtDT(st.last_sign_in_at)}</span>${mail}`;
   };
+  const secCell = (u) => {
+    const st = statusById[u.id] || {};
+    if (u.role === 'client') return st.consent_at && !st.consent_revoked ? `<div class="status-mail">&#9989; Einwilligung ${new Date(st.consent_at).toLocaleDateString('de-DE')}</div>`
+      : (st.consent_revoked ? '<div class="status-mail">&#9888; Einwilligung widerrufen</div>' : '<div class="status-mail">&#9203; Einwilligung ausstehend</div>');
+    return st.mfa ? '<div class="status-mail">&#128274; 2-Faktor aktiv' + (u.id !== profile.id ? ` <button type="button" class="link-btn" data-mfareset="${u.id}">zur&uuml;cksetzen</button>` : '') + '</div>'
+      : '<div class="status-mail">&#9888; ohne 2-Faktor</div>';
+  };
+  await dsLoadSettings();
 
   const { data: users } = await sb.from('profiles').select('id, name, role, created_at, username, permissions');
   const roleOrder = { admin: 0, team: 1, client: 2 };
@@ -444,7 +455,7 @@ async function renderTeamPage(profile) {
             <button type="button" class="link-btn" data-uname="${u.id}" title="Benutzername f&uuml;r die Anmeldung festlegen">${u.username ? '&auml;ndern' : 'festlegen'}</button></div>`;
         const permCell = u.role !== 'client' ? '<span class="muted">alles</span>' :
           `<div class="chips">${permSummary(u.permissions)}</div><button type="button" class="secondary small-btn" data-perm="${u.id}" style="margin-top:6px;">Rechte</button>`;
-        return `<tr><td><span class="uname-name">${esc(u.name)}</span>${unameCell}</td><td>${statusCell(u)}</td><td>${roleCell}</td><td>${permCell}</td><td>${actionCell}</td></tr>`;
+        return `<tr><td><span class="uname-name">${esc(u.name)}</span>${unameCell}</td><td>${statusCell(u)}${secCell(u)}</td><td>${roleCell}</td><td>${permCell}</td><td>${actionCell}</td></tr>`;
       }).join('')
     : `<tr><td colspan="5" class="muted">Noch keine Nutzer:innen.</td></tr>`;
 
@@ -474,6 +485,7 @@ async function renderTeamPage(profile) {
     </div>
 
     <div class="card cred-card" id="credCard" hidden></div>
+    ${dsTeamCardHtml(profile, sorted, statusById)}
 
     <div class="card">
       <h2>Alle Nutzer:innen</h2>
@@ -488,6 +500,7 @@ async function renderTeamPage(profile) {
   `;
 
   renderShell(profile, 'team', 'Nutzerverwaltung', content);
+  dsWireTeam(profile, sorted, statusById, () => renderTeamPage(profile));
 
   appEl.querySelectorAll('.role-select').forEach(sel => {
     sel.onchange = async () => {
