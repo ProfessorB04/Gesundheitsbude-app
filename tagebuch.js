@@ -170,10 +170,11 @@ async function renderMyDiary(profile, date) {
   await diLoad();
   const weekStart = diMonday(date);
   const from = diAddDays(date, -6) < weekStart ? diAddDays(date, -6) : weekStart;
-  const [as, en, rt] = await Promise.all([
+  const [as, en, rt, md] = await Promise.all([
     sb.from('diary_assignments').select('*').eq('patient_id', profile.id),
     sb.from('diary_entries').select('*').eq('patient_id', profile.id).gte('entry_date', from).lte('entry_date', diAddDays(weekStart, 6)).order('entry_time'),
     rtLoadMine(profile, from, diAddDays(weekStart, 6)),
+    mdLoadMine(profile, from, diAddDays(weekStart, 6)),
   ]);
   const assigns = (as.data || []).filter(a => diCat(a.category_id) && diCat(a.category_id).active);
   const entries = en.data || [];
@@ -188,7 +189,8 @@ async function renderMyDiary(profile, date) {
       const c = diCat(a.category_id);
       const has = entries.some(e => e.entry_date === d && e.category_id === a.category_id);
       return `<i class="${has ? 'on' : ''}" style="--c:${c.color}"></i>`;
-    }).join('') + (() => { const st = rtDayState(rt, d); return st ? `<i class="rt-dot ${st}" title="Routinen"></i>` : ''; })();
+    }).join('') + (() => { const st = rtDayState(rt, d); return st ? `<i class="rt-dot ${st}" title="Routinen"></i>` : ''; })()
+      + (() => { const st = mdDayState(md, d); return st ? `<i class="md-dot ${st}" title="Einnahmen"></i>` : ''; })();
     return `<button type="button" class="di-day${d === date ? ' sel' : ''}${d === today ? ' today' : ''}" data-day="${d}" ${d > today ? 'disabled' : ''}>
       <span>${new Date(d + 'T12:00:00').toLocaleDateString('de-DE', { weekday: 'short' })}</span><b>${d.slice(8)}</b><div class="di-dots">${dots}</div></button>`;
   }).join('');
@@ -221,9 +223,10 @@ async function renderMyDiary(profile, date) {
       ${date !== today ? '<button type="button" class="secondary small-btn" id="diToday">Heute</button>' : ''}
     </div>
     <div class="di-week">${strip}</div>
+    ${mdMineHtml(md, date, canEdit)}
     ${rtMineHtml(rt, date, canEdit)}
-    ${!assigns.length ? (rt.assigns.length ? '' : '<div class="card"><h2>Noch nichts zugewiesen</h2><p class="muted">Die Praxis legt fest, was du in dein Tagebuch eintr&auml;gst. Sobald das passiert ist, erscheint es hier.</p></div>')
-      : (cards || (rt.assigns.some(a => rtActiveOn(a, date)) ? '' : '<div class="card"><p class="muted">F&uuml;r diesen Tag ist nichts vorgesehen.</p></div>'))}
+    ${!assigns.length ? (rt.assigns.length || md.items.length ? '' : '<div class="card"><h2>Noch nichts zugewiesen</h2><p class="muted">Die Praxis legt fest, was du in dein Tagebuch eintr&auml;gst. Sobald das passiert ist, erscheint es hier.</p></div>')
+      : (cards || (rt.assigns.some(a => rtActiveOn(a, date)) || md.items.length ? '' : '<div class="card"><p class="muted">F&uuml;r diesen Tag ist nichts vorgesehen.</p></div>'))}
     ${canEdit ? '' : '<p class="hint">Du kannst dein Tagebuch ansehen. Eintragen ist f&uuml;r dich gerade nicht freigeschaltet.</p>'}`;
   renderShell(profile, 'meintagebuch', 'Mein Tagebuch', content);
   const again = () => renderMyDiary(profile, date);
@@ -232,7 +235,7 @@ async function renderMyDiary(profile, date) {
   const t = document.getElementById('diToday'); if (t) t.onclick = () => renderMyDiary(profile, today);
   appEl.querySelectorAll('[data-day]').forEach(b => { b.onclick = () => renderMyDiary(profile, b.dataset.day); });
   appEl.querySelectorAll('[data-add]').forEach(b => { b.onclick = () => diEntryDialog(profile.id, diCat(b.dataset.add), date, null, again); });
-  if (canEdit) rtWireMine(profile, rt, date, again);
+  if (canEdit) { rtWireMine(profile, rt, date, again); mdWireMine(profile, md, date, again); }
   if (canEdit) appEl.querySelectorAll('[data-entry]').forEach(el => {
     el.onclick = () => { const e = entries.find(x => x.id === el.dataset.entry); diEntryDialog(profile.id, diCat(e.category_id), e.entry_date, e, again); };
   });

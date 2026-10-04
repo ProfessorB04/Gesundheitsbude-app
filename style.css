@@ -550,3 +550,42 @@ select{ -webkit-appearance:none; appearance:none; min-height:44px; padding-right
   .rt-grid{ grid-template-columns:repeat(14, 8px); gap:2px; } .rt-grid i{ width:8px; height:8px; border-radius:2px; }
   .rt-item{ padding:9px 10px; gap:10px; }
 }
+
+/* ---------------- Befunde, Laborwerte, Einnahmen ---------------- */
+.di-dots i.md-dot{ border-radius:1px; transform:rotate(45deg); background:transparent; border:1px solid var(--sky); width:6px; height:6px; }
+.di-dots i.md-dot.part{ background:color-mix(in srgb, var(--sky) 45%, transparent); }
+.di-dots i.md-dot.full{ background:var(--sky); }
+.md-facts{ display:flex; flex-wrap:wrap; gap:8px 14px; align-items:center; margin-top:12px; font-size:.88rem; color:var(--ink-soft); }
+.md-list{ display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.md-row{ display:grid; grid-template-columns:1fr auto auto; gap:12px; align-items:center; padding:10px 12px; border-radius:14px; background:var(--glass-2); border-left:4px solid var(--sky); }
+.md-row.off{ opacity:.5; }
+.md-dose{ display:inline-block; font-size:.78rem; font-weight:700; padding:1px 8px; border-radius:99px; background:rgba(62,186,230,.18); color:#bfeaff; margin-left:4px; text-decoration:none; }
+.md-ad{ text-align:right; font-size:.85rem; min-width:56px; }
+.md-lab td, .md-lab th, .md-docs td, .md-audit td{ vertical-align:top; padding:8px 8px; }
+.md-audit td{ font-size:.8rem; }
+.md-vis{ display:inline-flex !important; flex-direction:row !important; gap:6px; align-items:center; font-size:.8rem; white-space:nowrap; }
+.md-vis input{ width:auto; accent-color:var(--pink); }
+.md-edit{ border:1px solid var(--glass-line); border-radius:14px; padding:12px; margin-bottom:10px; background:rgba(16,16,21,.35); }
+.md-edit:has(.e_inc:not(:checked)){ opacity:.45; }
+.md-warn{ font-size:.8rem; color:var(--amber); background:rgba(255,200,87,.12); border-radius:10px; padding:6px 10px; margin-bottom:8px; }
+.md-grid{ display:grid; grid-template-columns:repeat(3, 1fr); gap:8px 12px; align-items:end; }
+.md-grid label{ display:flex; flex-direction:column; gap:4px; font-size:.8rem; color:var(--ink-soft); }
+.md-grid .w2{ grid-column:span 2; } .md-grid .w3{ grid-column:1 / -1; }
+.md-grid [hidden]{ display:none !important; }
+.md-inc{ grid-column:1 / -1; flex-direction:row !important; align-items:center; font-weight:700; color:var(--ink) !important; }
+.md-slots{ display:flex; flex-wrap:wrap; gap:4px 12px; align-items:center; font-size:.8rem; color:var(--ink-soft); }
+.md-slots > span{ width:100%; }
+.md-slots label.check, .md-inc{ display:inline-flex !important; flex-direction:row !important; gap:5px; align-items:center; }
+.md-slots input, .md-inc input{ width:auto; accent-color:var(--pink); }
+.md-rvlab td{ padding:3px; } .md-rvlab input[type=text]{ width:100%; min-width:80px; font-size:.82rem; padding:6px 8px; }
+.md-rvlab input[type=checkbox]{ width:auto; accent-color:var(--pink); }
+.md-cyc{ display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid var(--glass-line); }
+.md-doc{ display:flex; gap:12px; align-items:center; padding:10px 12px; border-radius:14px; background:var(--glass-2); margin-top:8px; }
+.md-doc-ic{ font-size:1.4rem; }
+.md-cycle{ display:flex; flex-wrap:wrap; gap:8px 12px; align-items:center; margin-top:10px; padding:8px 12px; border-radius:12px; background:rgba(253,30,175,.1); font-size:.9rem; }
+.md-notdue{ margin-top:12px; font-size:.8rem; color:var(--ink-mute); }
+@media (max-width:640px){
+  .md-grid{ grid-template-columns:1fr 1fr; } .md-grid .w2, .md-grid .w3{ grid-column:1 / -1; }
+  .md-row{ grid-template-columns:1fr auto; } .md-row .link-btn{ grid-column:1 / -1; justify-self:start; }
+  .md-docs tr{ display:block; padding:8px 0; border-bottom:1px solid var(--glass-line); } .md-docs td{ display:block; padding:3px 0; }
+}

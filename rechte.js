@@ -6,15 +6,15 @@
 const PERM_AREAS = [
   { key: 'therapieplan', label: 'Mein Therapieplan', sub: 'Zeitplan, n&auml;chste Schritte, Empfehlungen',
     levels: [['none', 'kein Zugriff'], ['view', 'nur ansehen'], ['edit', 'Schritte abhaken']] },
-  { key: 'labor', label: 'Laborwerte', sub: 'Befunde als PDF',
+  { key: 'labor', label: 'Laborwerte & Befunde', sub: 'Befunde, Laborwerte und Verlauf',
     levels: [['none', 'kein Zugriff'], ['view', 'nur ansehen'], ['edit', 'selbst hochladen']] },
-  { key: 'tagebuch', label: 'Tagebuch', sub: 'Kategorien, die die Praxis zuweist',
+  { key: 'tagebuch', label: 'Tagebuch', sub: 'Einnahmen, Routinen und Kategorien abhaken / eintragen',
     levels: [['none', 'kein Zugriff'], ['view', 'nur ansehen'], ['edit', 'eintragen']] },
   { key: 'videos', label: 'Videos / Zoom-Aufzeichnungen', sub: 'Aufzeichnungen der eigenen Termine',
     levels: [['none', 'kein Zugriff'], ['view', 'ansehen']] },
 ];
 // Bereiche, die in der App schon fertig sind (die anderen sind vorbereitet und erscheinen, sobald sie gebaut sind)
-const PERM_READY = ['therapieplan', 'tagebuch'];
+const PERM_READY = ['therapieplan', 'tagebuch', 'labor'];
 
 function permOf(perms) { return Object.assign({}, PERM_DEFAULT, perms || {}); }
 

@@ -354,7 +354,7 @@ function tbXlsx() {
   if (window.XLSX) return Promise.resolve(window.XLSX);
   return new Promise((ok, fail) => {
     const s = document.createElement('script');
-    s.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.src = 'vendor/xlsx.full.min.js';
     s.onload = () => ok(window.XLSX); s.onerror = () => fail(new Error('Excel-Bibliothek konnte nicht geladen werden.'));
     document.head.appendChild(s);
   });
